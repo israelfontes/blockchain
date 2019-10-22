@@ -54,22 +54,21 @@ def register():
 
     nodeList = req['node_list']
     for node in nodeList:
-        if node not in nodeList:
-            self.nodes.add(node)
-
+        if node not in BLOCKCHAIN.nodes:
+            BLOCKCHAIN.nodes.add(node)
+    
     return jsonify({
     })
 
 @app.route('/nodes/resolve', methods=['GET'])
 def resolve():
-    return jsonify({
-        'data': BLOCKCHAIN.resolve()
-    })
+    BLOCKCHAIN.resolveConflicts()
+    return jsonify({})
 
 
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port='5001', debug=True)
+    app.run(host='127.0.0.1', port='5000', debug=True)
 
 # Implemente sua API com os end-points indicados no GitHub.
 # https://github.com/danilocurvelo/imd0293/tree/master/06-api
