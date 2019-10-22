@@ -66,7 +66,7 @@ class Blockchain(object):
         # 1. PoW válido
         # 2. Transações assinadas e válidas
         # 3. Merkle Root válido
-        for block in self.chain:
+        for block in chain:
             if not self.isValidProof(block, block['nonce']):
                 return False
 
@@ -82,15 +82,37 @@ class Blockchain(object):
     def resolveConflicts(self):
         # Consulta todos os nós registrados, e verifica se algum outro nó tem um blockchain com mais PoW e válido. Em caso positivo,
         # substitui seu próprio chain.
-        for node in self.nodes:
-            if len(list(requests.get(node+"/chain"))) > len(self.chain):
-                self.chain = requests.get(node)
+        chainNeighbor = list()
         
+        for node in self.nodes:
+            r = requests.get("{}/chain".format(node))
+            chain = list(r.json()['chain'])
+            #Verifica se o chain do nó vizinho é maior que ele proprio
+            if len(chain) > len(self.chain):
+                chainNeighbor = chain      
+        
+        if len(chainNeighbor) == 0:
+            return chainNeighbor
+
+        #percorre todas as transações do proprio chain
+        for block in self.chain:
+            for transaction in block['transactions']:
+                #percorre todos os blocos do nó vizinho 
+                for blockNeighbor in chainNeighbor:
+                    #verifica se a transação da propria chain está contida na chain do vizinho
+                    if transaction not in blockNeighbor['transactions']:
+                        #adiciona a transação que NÃO está incluida na chain do vizinho no memPool para ser revalidada
+                        self.memPool.append(transaction)
+        
+        self.chain = chainNeighbor
+
+        #verifica se a memPool possui transações que já foram validadas pela chain do vizinho e retira essas transasções
         for block in self.chain:
             for transaction in self.memPool:
                 if transaction in block['transactions']:
                     self.memPool.remove(transaction)
-
+        return chainNeighbor
+        
     @staticmethod
     def generateMerkleRoot(transactions):
         if (len(transactions) == 0): # Para o bloco genesis
