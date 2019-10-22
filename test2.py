@@ -6,8 +6,6 @@ import json
 ADDRS = 'http://localhost:5001'
 ADDRS_NEXT = 'http://localhost:5000'
 
-requests.post('{}/nodes/register'.format(ADDRS_NEXT), json={'node_list':[ADDRS]})
-
 def path(relative):
     return '{}{}'.format(ADDRS, relative)
 
@@ -24,6 +22,8 @@ def transactions_create():
         'timestamp': int(time()),
         'privKey': PRIV_KEY,
     })
+
+requests.post('{}/nodes/register'.format(ADDRS_NEXT), json={'node_list':[ADDRS]})
 
 # Cria 5 blocos, incluindo o Genesis, contendo de 1-4 transações cada, com valores aleatórios, entre os endereços indicados em sender e recipient.
 for x in range(0, 4):

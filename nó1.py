@@ -56,17 +56,14 @@ def register():
     for node in nodeList:
         if node not in BLOCKCHAIN.nodes:
             BLOCKCHAIN.nodes.add(node)
-
-    print(BLOCKCHAIN.nodes)
     
     return jsonify({
     })
 
 @app.route('/nodes/resolve', methods=['GET'])
 def resolve():
-    return jsonify({
-        'data': BLOCKCHAIN.resolveConflicts()
-    })
+    BLOCKCHAIN.resolveConflicts()
+    return jsonify({})
 
 
 

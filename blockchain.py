@@ -75,7 +75,9 @@ class Blockchain(object):
                 if transaction['signature'] == None:
                     return False
                 else:
-                    if self.verifySignature(transaction['sender'],transaction['signature'],json.dumps(transaction, sort_keys=True)):
+                    transaction_ = transaction.copy()
+                    del transaction_['signature']
+                    if not self.verifySignature(transaction['sender'],transaction['signature'],json.dumps(transaction_, sort_keys=True)):
                         return False
 
             if not block['merkleRoot'] == self.generateMerkleRoot(block['transactions']):
@@ -99,7 +101,7 @@ class Blockchain(object):
                     chainNeighbor = chain      
         
         if len(chainNeighbor) == 0:
-            return chainNeighbor
+            return None
 
         #percorre todas as transações do proprio chain
         for block in self.chain:
@@ -118,7 +120,8 @@ class Blockchain(object):
             for transaction in self.memPool:
                 if transaction in block['transactions']:
                     self.memPool.remove(transaction)
-        return chainNeighbor
+        
+        return None
         
     @staticmethod
     def generateMerkleRoot(transactions):
