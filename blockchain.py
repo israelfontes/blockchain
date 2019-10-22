@@ -68,13 +68,18 @@ class Blockchain(object):
         # 3. Merkle Root válido
         for block in chain:
             if not self.isValidProof(block, block['nonce']):
+                print("invalid nonce")
                 return False
 
             for transaction in block['transactions']:
-                if not self.verifySignature(transaction['sender'],transaction['signature'],transaction):
+                if transaction['signature'] == None:
                     return False
+                else:
+                    if self.verifySignature(transaction['sender'],transaction['signature'],json.dumps(transaction, sort_keys=True)):
+                        return False
 
             if not block['merkleRoot'] == self.generateMerkleRoot(block['transactions']):
+                print("merkleRoot invalid")
                 return False
 
         return True             
@@ -89,7 +94,9 @@ class Blockchain(object):
             chain = list(r.json()['chain'])
             #Verifica se o chain do nó vizinho é maior que ele proprio
             if len(chain) > len(self.chain):
-                chainNeighbor = chain      
+                #verifica se o nó vizinho é valido
+                if self.isValidChain(chain):
+                    chainNeighbor = chain      
         
         if len(chainNeighbor) == 0:
             return chainNeighbor
