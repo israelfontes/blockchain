@@ -4,8 +4,7 @@ from time import time
 import copy
 import random
 import requests
-from flask import Flask
-from flask import request
+
 from bitcoin.wallet import CBitcoinSecret
 from bitcoin.signmessage import BitcoinMessage, VerifyMessage, SignMessage
 
@@ -21,7 +20,7 @@ class Blockchain(object):
 
     def createGenesisBlock(self):
         self.createBlock(previousHash='0'*64, nonce=0)
-        self.mineProofOfWork(self.prevBlock) 
+        self.mineProofOfWork(self.prevBlock)
 
     def createBlock(self, nonce=0, previousHash=None):
         if (previousHash == None):
@@ -168,52 +167,3 @@ class Blockchain(object):
     def verifySignature(address, signature, message):
         msg = BitcoinMessage(message)
         return VerifyMessage(address, msg, signature)
-
-
-blockchain = Blockchain()
-
-app = Flask(__name__)
-
-@app.route('/transactions/create', methods=['GET','POST'])
-def createTransaction():
-    if request.method == 'POST':
-        blockchain.createTransaction(request.form.get('sender'),request.form.get('recipient'),request.form.get('amount'),request.form.get('timestamp'),request.form.get('privKey'))
-    else:
-        return "Error."
-
-@app.route('/transactions/mempool', methods=['GET','POST'])
-def memPoolTransactions():
-    if request.method == 'GET':
-        return blockchain.memPool
-
-@app.route('/mine', methods=['GET','POST'])
-def mine():
-    if request.method == 'GET':
-        blockchain.mineProofOfWork(blockchain.prevBlock)
-
-@app.route('/chain', methods=['GET','POST'])
-def chain():
-    if request.method == 'GET':
-        return blockchain.chain
-
-@app.route('/nodes/register', methods=['GET','POST'])
-def register():
-    if request.method == 'POST':
-        nodeList = list(request.data)
-        for node in nodeList:
-            if node not in nodeList:
-                self.nodes.add(node)
-    else:
-        return "Error."
-
-@app.route('/nodes/resolve', methods=['GET','POST'])
-def resolve():
-    if request.method == 'GET':
-        return blockchain.resolve()
-
-if __name__ == '__main__':
-    app.run(host='127.0.0.1', port='5001', debug=True)
-
-# Implemente sua API com os end-points indicados no GitHub.
-# https://github.com/danilocurvelo/imd0293/tree/master/06-api
-# Implemente um teste com ao menos 2 nós simultaneos.
